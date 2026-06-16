@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - Manajemen Keuangan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3B5BDB;
+            --primary-dark: #2F4AC0;
+            --accent-purple: #7C3AED;
+            --green: #22C55E;
+            --red: #EF4444;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 2px 8px rgba(0,0,0,0.06);
+            --radius-card: 12px;
+            --radius-btn: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-top: 60px; /* Space for sticky navbar */
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 1000;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            height: 100%;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.875rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Container & Sections */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        /* Header Styling */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .page-header .subtitle {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius-card);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Wallet Cards Horizontal Scroll */
+        .wallet-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            scrollbar-width: none;
+        }
+        .wallet-scroll::-webkit-scrollbar { display: none; }
+
+        .wallet-card {
+            min-width: 200px;
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 120px;
+            flex-shrink: 0;
+        }
+
+        .wallet-card .label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .wallet-card .balance {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* Summary Grid */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .summary-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .summary-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .summary-item .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .summary-item .value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        /* Proyeksi Cards */
+        .projection-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .projection-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .projection-card {
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            color: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Badge */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 0.5rem;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        /* Modal Forms */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .modal-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body { padding: 1.25rem; }
+        .modal-footer {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Analysis Filter */
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Utility Classes */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            border-radius: var(--radius-btn);
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
+        .text-muted { color: var(--text-muted); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 3000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-logo">MASTER</div>
+        <div class="nav-tabs" id="navTabs">
+            <div class="nav-tab active" data-target="beranda">Beranda</div>
+            <div class="nav-tab" data-target="dompet">Dompet</div>
+            <div class="nav-tab" data-target="anggaran">Anggaran</div>
+            <div class="nav-tab" data-target="analisis">Analisis</div>
+            <div class="nav-tab" data-target="cashflow">Cash Flow</div>
+            <div class="nav-tab" data-target="laporan">Laporan</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Halaman Beranda -->
+        <section id="beranda" class="active">
+            <div class="page-header">
+                <h1 id="activeTabName">Beranda</h1>
+                <div class="subtitle">RINGKASAN KEUANGAN ANDA</div>
+            </div>
+            <div id="berandaContent"></div>
+        </section>
+
+        <!-- Halaman Dompet -->
+        <section id="dompet">
+            <div class="page-header">
+                <h1>Dompet</h1>
+                <div class="subtitle">KELOLA SALDO DOMPET ANDA</div>
+            </div>
+            <div id="dompetContent"></div>
+        </section>
+
+        <!-- Halaman Anggaran -->
+        <section id="anggaran">
+            <div class="page-header">
+                <h1>Anggaran</h1>
+                <div class="subtitle">ATUR BATAS PENGELUARAN PER KATEGORI</div>
+            </div>
+            <div id="anggaranContent"></div>
+        </section>
+
+        <!-- Halaman Analisis -->
+        <section id="analisis">
+            <div class="page-header">
+                <h1>Analisis</h1>
+                <div class="subtitle">ANALISIS KESEHATAN KEUANGAN ANDA</div>
+            </div>
+            <div id="analisisContent"></div>
+        </section>
+
+        <!-- Halaman Cash Flow -->
+        <section id="cashflow">
+            <div class="page-header">
+                <h1>Cash Flow</h1>
+                <div class="subtitle">ARUS KAS MASUK DAN KELUAR</div>
+            </div>
+            <div id="cashflowContent"></div>
+        </section>
+
+        <!-- Halaman Laporan -->
+        <section id="laporan">
+            <div class="page-header">
+                <h1>Laporan</h1>
+                <div class="subtitle">EKSPOR DAN KELOLA DATA</div>
+            </div>
+            <div id="laporanContent"></div>
+        </section>
+    </div>
+
+    <!-- Modal Form -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal" id="modalBody"></div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <script>
+        // Data State
+        let wallets = [];
+        let transactions = [];
+        let budgets = [];
+        let categories = ["Gaji", "Belanja", "Makan", "Transportasi", "Tagihan", "Hiburan", "Lainnya"];
+        
+        const categoryColors = {
+            "Gaji":         { bg: "#D1FAE5", text: "#065F46" },
+            "Belanja":      { bg: "#FCE7F3", text: "#9D174D" },
+            "Makan":        { bg: "#FEF3C7", text: "#92400E" },
+            "Transportasi": { bg: "#DBEAFE", text: "#1E40AF" },
+            "Tagihan":      { bg: "#EDE9FE", text: "#5B21B6" },
+            "Hiburan":      { bg: "#FFEDD5", text: "#9A3412" },
+            "Lainnya":      { bg: "#F1F5F9", text: "#475569" }
+        };
+
+        const state = {
+            activeTab: 'beranda',
+            charts: {}
+        };
+
+        // --- DATA MANAGEMENT ---
+        function loadData() {
+            const storedWallets = localStorage.getItem('master_wallets');
+            const storedTransactions = localStorage.getItem('master_transactions');
+            const storedBudgets = localStorage.getItem('master_budgets');
+            const storedCategories = localStorage.getItem('master_categories');
+
+            if (storedWallets) wallets = JSON.parse(storedWallets);
+            if (storedTransactions) transactions = JSON.parse(storedTransactions);
+            if (storedBudgets) budgets = JSON.parse(storedBudgets);
+            if (storedCategories) categories = JSON.parse(storedCategories);
+
+            // Seed data if empty
+            if (wallets.length === 0 && transactions.length === 0) {
+                wallets = [
+                    { id: "w1", nama: "Tunai", saldoAwal: 370000, saldo: 3370000 },
+                    { id: "w2", nama: "Bank", saldoAwal: 2000000, saldo: 2000000 }
+                ];
+                transactions = [
+                    { id:"t1", tanggal:"2026-06-27", walletId:"w1", deskripsi:"BULANAN", kategori:"Gaji", tipe:"masuk", jumlah:3000000 },
+                    { id:"t2", tanggal:"2026-06-17", walletId:"w1", deskripsi:"JAKET", kategori:"Belanja", tipe:"keluar", jumlah:80000 },
+                    { id:"t3", tanggal:"2026-06-15", walletId:"w1", deskripsi:"TEMPE AMBA", kategori:"Makan", tipe:"keluar", jumlah:50000 }
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('master_wallets', JSON.stringify(wallets));
+            localStorage.setItem('master_transactions', JSON.stringify(transactions));
+            localStorage.setItem('master_budgets', JSON.stringify(budgets));
+            localStorage.setItem('master_categories', JSON.stringify(categories));
+        }
+
+        // --- HELPERS ---
+        function formatRupiah(angka) {
+            const val = Math.abs(angka) || 0;
+            return 'Rp ' + val.toLocaleString('id-ID');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(target) {
+            state.activeTab = target;
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.target === target);
+            });
+            document.querySelectorAll('section').forEach(sec => {
+                sec.classList.toggle('active', sec.id === target);
+            });
+
+            // Update Header Beranda specifically for the "MASTER" logo style
+            const berandaHeader = document.querySelector('#beranda .page-header h1');
+            if (target === 'beranda') {
+                berandaHeader.innerHTML = 'MASTER <span style="color: var(--primary); font-weight: 400; margin-left: 5px;">Beranda</span>';
+            }
+
+            renderPage();
+            window.scrollTo(0, 0);
+        }
+
+        document.getElementById('navTabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('.nav-tab');
+            if (tab) switchTab(tab.dataset.target);
+        });
+
+        // --- RENDER LOGIC ---
+        function renderPage() {
+            const contentId = `${state.activeTab}Content`;
+            const container = document.getElementById(contentId);
+            if (!container) return;
+
+            container.innerHTML = ''; // Clear
+
+            switch(state.activeTab) {
+                case 'beranda': renderBeranda(container); break;
+                case 'dompet': renderDompet(container); break;
+                case 'anggaran': renderAnggaran(container); break;
+                case 'analisis': renderAnalisis(container); break;
+                case 'cashflow': renderCashFlow(container); break;
+                case 'laporan': renderLaporan(container); break;
+            }
+        }
+
+        function renderBeranda(container) {
+            // 1. Wallet Cards
+            let walletHtml = '<div class="wallet-scroll">';
+            wallets.forEach((w, i) => {
+                const gradients = [
+                    'linear-gradient(135deg, #22C55E, #16A34A)',
+                    'linear-gradient(135deg, #3B5BDB, #7C3AED)',
+                    'linear-gradient(135deg, #F59E0B, #D97706)',
+                    'linear-gradient(135deg, #EC4899, #BE185D)'
+                ];
+                const grad = gradients[i % gradients.length];
+                walletHtml += `
+                    <div class="wallet-card" style="background: ${grad}">
+                        <div class="label">TUNAI</div>
+                        <div class="balance">${formatRupiah(w.saldo)}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.9;">${w.nama}</div>
+                    </div>
+                `;
+            });
+            walletHtml += '</div>';
+
+            // 2. Summary
+            const totalSaldo = wallets.reduce((a, b) => a + b.saldo, 0);
+            const now = new Date();
+            const thisMonth = now.getMonth();
+            const thisYear = now.getFullYear();
+            
+            const monthTransactions = transactions.filter(t => {
+                const d = new Date(t.tanggal);
+                return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+            });
+            
+            const income = monthTransactions.filter(t => t.tipe === 'masuk').reduce((a, b) => a + b.jumlah, 0);
+            const expense = monthTransactions.filter(t => t.tipe === 'keluar').reduce((a, b) => a + b.jumlah, 0);
+
+            let summaryHtml = `
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="label">Total Saldo</div>
+                        <div class="value">${formatRupiah(totalSaldo)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Pemasukan (Bulan Ini)</div>
+                        <div class="value text-green">+${formatRupiah(income)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Pengeluaran (Bulan Ini)</div>
+                        <div class="value text-red">-${formatRupiah(expense)}</div>
+                    </div>
+                </div>
+            `;
+
+            // 3. Proyeksi
+            const firstDate = transactions.length > 0 ? new Date(Math.min(...transactions.map(t => new Date(t.tanggal)))) : new Date();
+            const diffDays = Math.max(1, Math.ceil((new Date() - firstDate) / (1000 * 60 * 60 * 24)));
+            const dailyAvg = totalSaldo / diffDays;
+
+            let projectionHtml = `
+                <div class="projection-grid">
+                    <div class="projection-card">
+                        <div class="label" style="font-size: 0.7rem; opacity: 0.8; margin-bottom: 4px;">RATA-RATA HARIAN</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">${formatRupiah(dailyAvg)}</div>
+                    </div>
+                    <div class="projection-card">
+                        <div class="label" style="font-size: 0.7rem; opacity: 0.8; margin-bottom: 4px;">PROYEKSI BULANAN</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">${formatRupiah(dailyAvg * 30)}</div>
+                    </div>
+                    <div class="projection-card">
+                        <div class="label" style="font-size: 0.7rem; opacity: 0.8; margin-bottom: 4px;">PROYEKSI TAHUNAN</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">${formatRupiah(dailyAvg * 365)}</div>
+                    </div>
+                </div>
+            `;
+
+            // 4. Recent Transactions
+            let recentHtml = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1.1rem; font-weight: 700;">Transaksi Terbaru</h3>
+                    <button class="btn btn-primary" onclick="openTransactionModal()">+ TAMBAH</button>
+                </div>
+                <div class="table-container" style="margin-bottom: 1.5rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Dompet</th>
+                                <th>Deskripsi</th>
+                                <th>Kategori</th>
+                                <th>Jumlah</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            const recent = [...transactions].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 10);
+            recent.forEach(t => {
+                const w = wallets.find(wal => wal.id === t.walletId) || { nama: '?' };
+                const catColor = categoryColors[t.kategori] || { bg: '#eee', text: '#333' };
+                recentHtml += `
+                    <tr>
+                        <td>${t.tanggal}</td>
+                        <td>${w.nama}</td>
+                        <td>${t.deskripsi}</td>
+                        <td><span class="badge" style="background: ${catColor.bg}; color: ${catColor.text}">${t.kategori}</span></td>
+                        <td class="${t.tipe === 'masuk' ? 'text-green' : 'text-red'}">
+                            ${t.tipe === 'masuk' ? '+' : '-'}${formatRupiah(t.jumlah)}
+                        </td>
+                        <td>
+                            <span style="cursor: pointer; margin-right: 8px;" onclick="editTransaction('${t.id}')">✏️</span>
+                            <span style="cursor: pointer;" onclick="deleteTransaction('${t.id}')">✕</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            if (recent.length === 0) recentHtml += '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Belum ada transaksi.</td></tr>';
+            recentHtml += '</tbody></table></div>';
+
+            // 5. Anggaran (Brief)
+            let budgetHtml = '<h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Anggaran</h3>';
+            if (budgets.length === 0) {
+                budgetHtml += '<p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">Belum ada anggaran.</p>';
+            } else {
+                budgets.forEach(b => {
+                    const actual = transactions
+                        .filter(t => t.kategori === b.kategori && t.tipe === 'keluar' && new Date(t.tanggal).getMonth() === thisMonth)
+                        .reduce((a, b) => a + b.jumlah, 0);
+                    const pct = Math.min(100, (actual / b.batas) * 100);
+                    let barColor = 'var(--green)';
+                    if (pct >= 100) barColor = 'var(--red)';
+                    else if (pct >= 75) barColor = '#F59E0B';
+
+                    budgetHtml += `
+                        <div style="margin-bottom: 1rem;">
+                            <div class="progress-info">
+                                <span style="font-weight: 600;">${b.kategori}</span>
+                                <span>${formatRupiah(actual)} / ${formatRupiah(b.batas)}</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: ${pct}%; background: ${barColor}"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // 6. Charts
+            let chartsHtml = `
+                <div class="charts-grid">
+                    <div class="card" style="margin-bottom: 0;">
+                        <h4 style="font-size: 0.9rem; margin-bottom: 1rem;">Distribusi Pengeluaran</h4>
+                        <canvas id="donutChart"></canvas>
+                    </div>
+                    <div class="card" style="margin-bottom: 0;">
+                        <h4 style="font-size: 0.9rem; margin-bottom: 1rem;">Masuk vs Keluar</h4>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = walletHtml + summaryHtml + projectionHtml + recentHtml + budgetHtml + chartsHtml;
+            
+            // Render Charts after adding to DOM
+            setTimeout(() => renderBerandaCharts(monthTransactions), 0);
+        }
+
+        function renderDompet(container) {
+            let html = `
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="openWalletModal()">+ DOMPET BARU</button>
+                </div>
+                <div class="summary-grid">
+            `;
+
+            wallets.forEach(w => {
+                html += `
+                    <div class="card" style="position: relative;">
+                        <div style="position: absolute; top: 1rem; right: 1rem; color: var(--red); cursor: pointer; font-size: 0.75rem; font-weight: 700;" onclick="deleteWallet('${w.id}')">HAPUS</div>
+                        <div class="label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">TUNAI</div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">${w.nama}</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${formatRupiah(w.saldo)}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderAnggaran(container) {
+            let html = `
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="openBudgetModal()">+ SET ANGGARAN</button>
+                </div>
+            `;
+
+            if (budgets.length === 0) {
+                html += '<p style="color: var(--text-muted);">Belum ada anggaran.</p>';
+            } else {
+                const now = new Date();
+                const thisMonth = now.getMonth();
+                budgets.forEach(b => {
+                    const actual = transactions
+                        .filter(t => t.kategori === b.kategori && t.tipe === 'keluar' && new Date(t.tanggal).getMonth() === thisMonth)
+                        .reduce((a, b) => a + b.jumlah, 0);
+                    const pct = Math.min(100, (actual / b.batas) * 100);
+                    let barColor = 'var(--green)';
+                    if (pct >= 100) barColor = 'var(--red)';
+                    else if (pct >= 75) barColor = '#F59E0B';
+
+                    const catColor = categoryColors[b.kategori] || { bg: '#eee', text: '#333' };
+
+                    html += `
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <span class="badge" style="background: ${catColor.bg}; color: ${catColor.text}">${b.kategori}</span>
+                                <span style="cursor: pointer; color: var(--red); font-weight: 700;" onclick="deleteBudget('${b.id}')">✕</span>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-info">
+                                    <span>Progress</span>
+                                    <span>${formatRupiah(actual)} dari ${formatRupiah(b.batas)}</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: ${pct}%; background: ${barColor}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            container.innerHTML = html;
+        }
+
+        function renderAnalisis(container) {
+            if (!state.analysisFilter) state.analysisFilter = '7';
+            
+            const filters = [
+                { id: '7', label: '7 Hari' },
+                { id: '30', label: '30 Hari' },
+                { id: '365', label: '1 Tahun' },
+                { id: 'p7', label: 'Proyeksi 7 Hari' },
+                { id: 'p30', label: 'Proyeksi 30 Hari' }
+            ];
+
+            let html = '<div class="filter-buttons">';
+            filters.forEach(f => {
+                html += `<button class="filter-btn ${state.analysisFilter === f.id ? 'active' : ''}" onclick="setAnalysisFilter('${f.id}')">${f.label}</button>`;
+            });
+            html += '</div>';
+
+            // Calculate Data
+            let income = 0, expense = 0;
+            const now = new Date();
+            
+            if (state.analysisFilter.startsWith('p')) {
+                const days = parseInt(state.analysisFilter.substring(1));
+                const totalSaldo = wallets.reduce((a, b) => a + b.saldo, 0);
+                const firstDate = transactions.length > 0 ? new Date(Math.min(...transactions.map(t => new Date(t.tanggal)))) : new Date();
+                const diffDays = Math.max(1, Math.ceil((new Date() - firstDate) / (1000 * 60 * 60 * 24)));
+                const dailyAvg = totalSaldo / diffDays;
+                income = 0; // Proyeksi doesn't show historical income
+                expense = dailyAvg * days;
+            } else {
+                const days = parseInt(state.analysisFilter);
+                const cutoff = new Date();
+                cutoff.setDate(now.getDate() - days);
+                
+                const filtered = transactions.filter(t => new Date(t.tanggal) >= cutoff);
+                income = filtered.filter(t => t.tipe === 'masuk').reduce((a, b) => a + b.jumlah, 0);
+                expense = filtered.filter(t => t.tipe === 'keluar').reduce((a, b) => a + b.jumlah, 0);
+            }
+
+            const net = income - expense;
+            const ratio = income > 0 ? (expense / income) * 100 : (expense > 0 ? 100 : 0);
+            
+            let status = "SANGAT SEHAT", statusColor = "var(--green)";
+            if (net <= 0) { status = "KRITIS"; statusColor = "var(--red)"; }
+            else if (ratio >= 90) { status = "PERHATIAN"; statusColor = "#F59E0B"; }
+            else if (ratio >= 60) { status = "SEHAT"; statusColor = "var(--primary)"; }
+
+            html += `
+                <div class="card" style="border-left: 8px solid ${statusColor}">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: ${statusColor}; margin-bottom: 0.5rem;">STATUS KEUANGAN: ${status}</div>
+                    <h3 style="margin-bottom: 1rem;">Ringkasan ${filters.find(f => f.id === state.analysisFilter).label}</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Pemasukan:</span>
+                            <span class="text-green">${formatRupiah(income)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Pengeluaran:</span>
+                            <span class="text-red">${formatRupiah(expense)}</span>
+                        </div>
+                        <hr style="border: none; border-top: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                            <span>Saldo Bersih:</span>
+                            <span class="${net >= 0 ? 'text-green' : 'text-red'}">${formatRupiah(net)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="font-size: 1rem; margin-bottom: 1rem;">Momentum</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <div class="progress-info">
+                            <span>Momentum Masuk</span>
+                            <span>${formatRupiah(income)}</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${income > 0 ? 100 : 0}%; background: var(--green)"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="progress-info">
+                            <span>Tekanan Keluar</span>
+                            <span>${formatRupiah(expense)}</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${income > 0 ? (expense/income)*100 : (expense > 0 ? 100 : 0)}%; background: var(--red)"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderCashFlow(container) {
+            let html = `
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="openTransactionModal()">+ TAMBAH TRANSAKSI</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Deskripsi</th>
+                                <th>Tipe</th>
+                                <th>Jumlah</th>
+                                <th>Dana Sebelum</th>
+                                <th>Dana Sesudah</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Calculate running balances per wallet
+            const walletIds = wallets.map(w => w.id);
+            let allProcessed = [];
+
+            walletIds.forEach(wid => {
+                const w = wallets.find(wal => wal.id === wid);
+                const wTrans = transactions
+                    .filter(t => t.walletId === wid)
+                    .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+                
+                let balance = w.saldoAwal || 0;
+                wTrans.forEach(t => {
+                    const before = balance;
+                    balance += t.tipe === "masuk" ? t.jumlah : -t.jumlah;
+                    allProcessed.push({ ...t, danaSebelum: before, danaSesudah: balance });
+                });
+            });
+
+            allProcessed.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            allProcessed.forEach(t => {
+                html += `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${t.deskripsi}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">${t.tanggal}</div>
+                        </td>
+                        <td><span class="badge" style="background: ${t.tipe === 'masuk' ? '#D1FAE5' : '#FEE2E2'}; color: ${t.tipe === 'masuk' ? '#065F46' : '#991B1B'}">${t.tipe.toUpperCase()}</span></td>
+                        <td class="${t.tipe === 'masuk' ? 'text-green' : 'text-red'}">${t.tipe === 'masuk' ? '+' : '-'}${formatRupiah(t.jumlah)}</td>
+                        <td>${formatRupiah(t.danaSebelum)}</td>
+                        <td>${formatRupiah(t.danaSesudah)}</td>
+                        <td>
+                            <span style="cursor: pointer; margin-right: 8px;" onclick="editTransaction('${t.id}')">✏️</span>
+                            <span style="cursor: pointer;" onclick="deleteTransaction('${t.id}')">✕</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (allProcessed.length === 0) html += '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Belum ada transaksi.</td></tr>';
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function renderLaporan(container) {
+            const items = [
+                { id: 'csv', title: 'Ekspor CSV', desc: 'Unduh data transaksi dalam format CSV', icon: '📊' },
+                { id: 'backup', title: 'Backup JSON', desc: 'Unduh backup lengkap data Anda', icon: '💾' },
+                { id: 'import', title: 'Impor JSON', desc: 'Masukkan data dari file backup', icon: '📥' }
+            ];
+
+            let html = '<div class="summary-grid">';
+            items.forEach(item => {
+                html += `
+                    <div class="card" style="cursor: pointer; text-align: center;" onclick="handleLaporan('${item.id}')">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">${item.icon}</div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">${item.title}</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">${item.desc}</p>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            html += '<input type="file" id="importFile" style="display: none;" accept=".json" onchange="processImport(event)">';
+            container.innerHTML = html;
+        }
+
+        // --- CRUD LOGIC ---
+        function openTransactionModal(id = null) {
+            const t = id ? transactions.find(item => item.id === id) : null;
+            const modalBody = document.getElementById('modalBody');
+            
+            let walletOptions = wallets.map(w => `<option value="${w.id}" ${t && t.walletId === w.id ? 'selected' : ''}>${w.nama}</option>`).join('');
+            let catOptions = categories.map(c => `<option value="${c}" ${t && t.kategori === c ? 'selected' : ''}>${c}</option>`).join('');
+
+            modalBody.innerHTML = `
+                <div class="modal-header">
+                    <h3 style="font-size: 1.1rem; font-weight: 700;">${id ? 'Edit' : 'Tambah'} Transaksi</h3>
+                    <span style="cursor: pointer; font-size: 1.5rem;" onclick="closeModal()">✕</span>
+                </div>
+                <div class="modal-body">
+                    <form id="transactionForm">
+                        <div class="form-group">
+                            <label>Tanggal</label>
+                            <input type="date" class="form-control" name="tanggal" value="${t ? t.tanggal : new Date().toISOString().split('T')[0]}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dompet</label>
+                            <select class="form-control" name="walletId" required>${walletOptions}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>Deskripsi</label>
+                            <input type="text" class="form-control" name="deskripsi" value="${t ? t.deskripsi : ''}" placeholder="Contoh: Makan Siang" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipe</label>
+                            <div style="display: flex; gap: 1rem;">
+                                <label style="font-weight: 400;"><input type="radio" name="tipe" value="masuk" ${!t || t.tipe === 'masuk' ? 'checked' : ''}> Masuk</label>
+                                <label style="font-weight: 400;"><input type="radio" name="tipe" value="keluar" ${t && t.tipe === 'keluar' ? 'checked' : ''}> Keluar</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select class="form-control" name="kategori" required>${catOptions}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>Jumlah (Rp)</label>
+                            <input type="number" class="form-control" name="jumlah" value="${t ? t.jumlah : ''}" placeholder="0" min="1" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" style="background: #eee;" onclick="closeModal()">Batal</button>
+                    <button class="btn btn-primary" onclick="saveTransaction('${id}')">Simpan</button>
+                </div>
+            `;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveTransaction(id) {
+            const form = document.getElementById('transactionForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.jumlah = parseInt(data.jumlah);
+
+            if (!data.jumlah || data.jumlah <= 0) {
+                alert("Jumlah tidak boleh 0");
+                return;
+            }
+
+            if (id && id !== 'null') {
+                // Edit: Rollback old transaction
+                const old = transactions.find(t => t.id === id);
+                const oldW = wallets.find(w => w.id === old.walletId);
+                if (old.tipe === 'masuk') oldW.saldo -= old.jumlah;
+                else oldW.saldo += old.jumlah;
+
+                // Update
+                Object.assign(old, data);
+                const newW = wallets.find(w => w.id === data.walletId);
+                if (data.tipe === 'masuk') newW.saldo += data.jumlah;
+                else newW.saldo -= data.jumlah;
+                showToast("Transaksi berhasil diperbarui ✓");
+            } else {
+                // Add New
+                data.id = generateId();
+                transactions.push(data);
+                const w = wallets.find(wal => wal.id === data.walletId);
+                if (data.tipe === 'masuk') w.saldo += data.jumlah;
+                else w.saldo -= data.jumlah;
+                showToast("Transaksi berhasil ditambahkan ✓");
+            }
+
+            saveData();
+            closeModal();
+            renderPage();
+        }
+
+        function deleteTransaction(id) {
+            if (confirm("Hapus transaksi ini?")) {
+                const idx = transactions.findIndex(t => t.id === id);
+                const t = transactions[idx];
+                const w = wallets.find(wal => wal.id === t.walletId);
+                if (t.tipe === 'masuk') w.saldo -= t.jumlah;
+                else w.saldo += t.jumlah;
+                
+                transactions.splice(idx, 1);
+                saveData();
+                renderPage();
+                showToast("Transaksi dihapus");
+            }
+        }
+
+        function editTransaction(id) {
+            openTransactionModal(id);
+        }
+
+        function openWalletModal() {
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="modal-header">
+                    <h3 style="font-size: 1.1rem; font-weight: 700;">Dompet Baru</h3>
+                    <span style="cursor: pointer; font-size: 1.5rem;" onclick="closeModal()">✕</span>
+                </div>
+                <div class="modal-body">
+                    <form id="walletForm">
+                        <div class="form-group">
+                            <label>Nama Dompet</label>
+                            <input type="text" class="form-control" name="nama" placeholder="Contoh: Bank BCA" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Saldo Awal (Rp)</label>
+                            <input type="number" class="form-control" name="saldo" placeholder="0" min="0" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" style="background: #eee;" onclick="closeModal()">Batal</button>
+                    <button class="btn btn-primary" onclick="saveWallet()">Simpan</button>
+                </div>
+            `;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveWallet() {
+            const form = document.getElementById('walletForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.saldo = parseInt(data.saldo);
+            data.saldoAwal = data.saldo;
+            data.id = generateId();
+
+            wallets.push(data);
+            saveData();
+            closeModal();
+            renderPage();
+            showToast("Dompet berhasil ditambahkan ✓");
+        }
+
+        function deleteWallet(id) {
+            if (confirm("Hapus dompet ini? Semua transaksi terkait juga akan dihapus.")) {
+                wallets = wallets.filter(w => w.id !== id);
+                transactions = transactions.filter(t => t.walletId !== id);
+                saveData();
+                renderPage();
+                showToast("Dompet dihapus");
+            }
+        }
+
+        function openBudgetModal() {
+            const modalBody = document.getElementById('modalBody');
+            let catOptions = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+            modalBody.innerHTML = `
+                <div class="modal-header">
+                    <h3 style="font-size: 1.1rem; font-weight: 700;">Set Anggaran</h3>
+                    <span style="cursor: pointer; font-size: 1.5rem;" onclick="closeModal()">✕</span>
+                </div>
+                <div class="modal-body">
+                    <form id="budgetForm">
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select class="form-control" name="kategori" required>${catOptions}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>Batas Pengeluaran (Rp)</label>
+                            <input type="number" class="form-control" name="batas" placeholder="0" min="1" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" style="background: #eee;" onclick="closeModal()">Batal</button>
+                    <button class="btn btn-primary" onclick="saveBudget()">Simpan</button>
+                </div>
+            `;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveBudget() {
+            const form = document.getElementById('budgetForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.batas = parseInt(data.batas);
+            data.id = generateId();
+
+            budgets.push(data);
+            saveData();
+            closeModal();
+            renderPage();
+            showToast("Anggaran berhasil diatur ✓");
+        }
+
+        function deleteBudget(id) {
+            budgets = budgets.filter(b => b.id !== id);
+            saveData();
+            renderPage();
+            showToast("Anggaran dihapus");
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function setAnalysisFilter(id) {
+            state.analysisFilter = id;
+            renderPage();
+        }
+
+        // --- CHARTS ---
+        function renderBerandaCharts(monthTransactions) {
+            // Destroy existing charts
+            if (state.charts.donut) state.charts.donut.destroy();
+            if (state.charts.bar) state.charts.bar.destroy();
+
+            const expenses = monthTransactions.filter(t => t.tipe === 'keluar');
+            const catData = {};
+            expenses.forEach(e => {
+                catData[e.kategori] = (catData[e.kategori] || 0) + e.jumlah;
+            });
+
+            const donutCtx = document.getElementById('donutChart').getContext('2d');
+            state.charts.donut = new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(catData),
+                    datasets: [{
+                        data: Object.values(catData),
+                        backgroundColor: ['#3B5BDB', '#7C3AED', '#22C55E', '#EF4444', '#F59E0B', '#EC4899', '#64748B']
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+            });
+
+            const income = monthTransactions.filter(t => t.tipe === 'masuk').reduce((a, b) => a + b.jumlah, 0);
+            const expense = monthTransactions.filter(t => t.tipe === 'keluar').reduce((a, b) => a + b.jumlah, 0);
+
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            state.charts.bar = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Masuk', 'Keluar'],
+                    datasets: [{
+                        label: 'Total',
+                        data: [income, expense],
+                        backgroundColor: ['#22C55E', '#EF4444']
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true, ticks: { callback: value => 'Rp ' + value.toLocaleString('id-ID') } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // --- LAPORAN HANDLERS ---
+        function handleLaporan(type) {
+            if (type === 'csv') {
+                let csv = 'Tanggal,Dompet,Deskripsi,Kategori,Tipe,Jumlah\n';
+                transactions.forEach(t => {
+                    const w = wallets.find(wal => wal.id === t.walletId) || { nama: '?' };
+                    csv += `${t.tanggal},${w.nama},${t.deskripsi},${t.kategori},${t.tipe},${t.jumlah}\n`;
+                });
+                downloadFile(csv, `transaksi_master_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+            } else if (type === 'backup') {
+                const backup = { wallets, transactions, budgets, categories };
+                downloadFile(JSON.stringify(backup, null, 2), `backup_master_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+            } else if (type === 'import') {
+                document.getElementById('importFile').click();
+            }
+        }
+
+        function downloadFile(content, fileName, contentType) {
+            const a = document.createElement("a");
+            const file = new Blob([content], { type: contentType });
+            a.href = URL.createObjectURL(file);
+            a.download = fileName;
+            a.click();
+        }
+
+        function processImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (confirm("Import akan mengganti semua data. Lanjutkan?")) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.wallets && data.transactions) {
+                            wallets = data.wallets;
+                            transactions = data.transactions;
+                            budgets = data.budgets || [];
+                            categories = data.categories || categories;
+                            saveData();
+                            renderPage();
+                            showToast("Data berhasil diimpor ✓");
+                        } else {
+                            alert("Format file tidak valid.");
+                        }
+                    } catch (err) {
+                        alert("Gagal membaca file.");
+                    }
+                };
+                reader.readAsText(file);
+            }
+            event.target.value = ''; // Reset
+        }
+
+        // --- INITIALIZE ---
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderPage();
+        });
+    </script>
+</body>
+</html>
